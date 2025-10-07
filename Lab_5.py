@@ -3,7 +3,7 @@ from time import time
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
-pin_outs = [2, 3, 4, 17, 27, 22, 10, 9, 11, 5]
+pin_outs = [17, 27, 22, 10, 9, 11, 5, 6, 13, 19]
 t0 = time()
 f = 0.2 # frequency in Hz
 step = pi/11 # phase step
@@ -20,12 +20,13 @@ try:
         t = time() - t0
         for i in range(len(pins)):
             # calculate duty cycle
-            B = (sin(2*pi*0.2*t - i*(pi/11)))**2  # Removed '- (p)' since 'p' is undefined
+            B = (sin(2*pi*f*t - i*(step)))**2  # Removed '- (p)' since 'p' is undefined
             dc = B * 100 # scale to 0-100
-            pwm.ChangeDutyCycle(dc) # set duty cycle        
+            pins[i].ChangeDutyCycle(dc) # set duty cycle        
             
 except KeyboardInterrupt: # stop gracefully on ctrl-C
     print('\nExiting')
 
-pwm.stop()
+for pwm in pins:
+    pwm.stop()
 GPIO.cleanup()
