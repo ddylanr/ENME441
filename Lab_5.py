@@ -21,6 +21,7 @@ def button_pressed(channel):
     global step_sign
     step_sign *= -1
 
+GPIO.setup(button, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.add_event_detect(button, GPIO.RISING, callback=button_pressed, bouncetime=200)
 
 try:
