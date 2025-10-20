@@ -31,7 +31,7 @@ class Bug:
         self.x = x # current x position (0-7)
         self.isWrapOn = isWrapOn
         self.__shifter = __shifter
-        self.__running = False
+        self.running = False
     
     def move_once(self):
         """Move the bug one step if it's running."""
@@ -40,7 +40,7 @@ class Bug:
 
         # Turn on the current LED
         pattern = 1 << self.x
-        self.shifter.shiftByte(pattern)
+        self.__shifter.shiftByte(pattern)
         time.sleep(self.timestep)
 
         # Random step left (-1) or right (+1)
@@ -57,5 +57,5 @@ class Bug:
                 self.x = 7
         
     def stop(self):
-        self.__running = False
+        self.running = False
         self.__shifter.shiftByte(0b00000000)
