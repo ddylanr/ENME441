@@ -13,16 +13,16 @@ class Shifter:
         GPIO.setup(self.latchPin, GPIO.OUT, initial=0) # start latch & clock low
         GPIO.setup(self.clockPin, GPIO.OUT, initial=0)
         
-def __ping(self, p): # ping the clock or latch pin
-    GPIO.output(p,1)
-    time.sleep(0)
-    GPIO.output(p,0)
+    def __ping(self, p): # ping the clock or latch pin
+        GPIO.output(p,1)
+        time.sleep(0)
+        GPIO.output(p,0)
 
-def shiftByte(self, b): # send a byte of data to the output
-    for i in range(8):
-        GPIO.output(self.serialPin, b & (1<<i))
-        self.__ping(self.clockPin) # ping the clock pin to shift register data
-    self.__ping(self.latchPin) # ping the latch pin to send register to output
+    def shiftByte(self, b): # send a byte of data to the output
+        for i in range(8):
+            GPIO.output(self.serialPin, b & (1<<i))
+            self.__ping(self.clockPin) # ping the clock pin to shift register data
+        self.__ping(self.latchPin) # ping the latch pin to send register to output
 
 class Bug:
     def __init__(self, timestep, x, isWrapOn, __shifter):
