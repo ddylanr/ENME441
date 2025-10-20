@@ -1,27 +1,29 @@
+import random
 import RPi.GPIO as GPIO
 import time
+from shifter import Shifter
 
-GPIO.setmode(GPIO.BCM)
-
-dataPin, latchPin, clockPin = 23, 24, 25
-
-GPIO.setup(dataPin, GPIO.OUT)
-GPIO.setup(latchPin, GPIO.OUT, initial=0) # start latch & clock low
-GPIO.setup(clockPin, GPIO.OUT, initial=0)
-
-pattern = 0b01100110 # pattern to display
-
-for i in range(8):
-    GPIO.output(dataPin, pattern & (1<<i))
-    GPIO.output(clockPin,1) # ping the clock pin to shift register data
-    time.sleep(0)
-    GPIO.output(clockPin,0)
-
-GPIO.output(latchPin, 1) # ping the latch pin to send register to output
-time.sleep(0)
-GPIO.output(latchPin, 0)
+s = Shifter(23, 24, 25)  # Initialize shifter with data, latch, clock pins
 
 try:
-    while 1: pass
-except:
+    position = 0  # start with leftmost LED (bit 0)
+
+    while True:
+        # Create the 8-bit pattern with one LED on
+        pattern = 1 << position
+        s.shiftByte(pattern)
+
+        time.sleep(0.05)
+
+        # Randomly move left (-1) or right (+1)
+        step = random.choice([-1, 1])
+        position += step
+
+        # Prevent going out of bounds (0–7)
+        if position < 0:
+            position = 0
+        elif position > 7:
+            position = 7
+
+except KeyboardInterrupt:
     GPIO.cleanup()
