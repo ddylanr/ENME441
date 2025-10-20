@@ -33,26 +33,28 @@ class Bug:
         self.__shifter = __shifter
         self.__running = False
     
-    def start(self):
-        self.__running = True
-        while self.__running:
-            # sends LED pattern to shift register
-            pattern = 1 << self.x
-            self.__shifter.shiftByte(pattern)
-            time.sleep(self.timestep)
+    def move_once(self):
+        """Move the bug one step if it's running."""
+        if not self.running:
+            return
 
-            # randomly move left (-1) or right (+1)
-            step = random.choice([-1, 1])
-            self.x += step
+        # Turn on the current LED
+        pattern = 1 << self.x
+        self.shifter.shiftByte(pattern)
+        time.sleep(self.timestep)
 
-            # handle wrapping/limit based on isWrapOn
-            if self.isWrapOn:
-                self.x = self.x % 8
-            else:
-                if self.x < 0:
-                    self.x = 0
-                elif self.x > 7:
-                    self.x = 7
+        # Random step left (-1) or right (+1)
+        step = random.choice([-1, 1])
+        self.x += step
+
+        # Handle wrapping or limits
+        if self.isWrapOn:
+            self.x %= 8
+        else:
+            if self.x < 0:
+                self.x = 0
+            elif self.x > 7:
+                self.x = 7
         
     def stop(self):
         self.__running = False

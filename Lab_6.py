@@ -10,4 +10,3 @@ try:
 except KeyboardInterrupt:
     b.stop()
     GPIO.cleanup()
-
