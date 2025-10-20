@@ -1,3 +1,4 @@
+import random
 import RPi.GPIO as GPIO
 import time
 GPIO.setmode(GPIO.BCM)
@@ -25,8 +26,34 @@ class Shifter:
         self.__ping(self.latchPin) # ping the latch pin to send register to output
 
 class Bug:
-    def __init__(self, timestep, x, isWrapOn, __shifter):
+    def __init__(self, __shifter, timestep = 0.1, x = 3, isWrapOn = False):
         self.timestep = timestep # time step in seconds
         self.x = x # current x position (0-7)
         self.isWrapOn = isWrapOn
         self.__shifter = __shifter
+        self.__running = False
+    
+    def start(self):
+        self.__running = True
+        while self.__running:
+            # sends LED pattern to shift register
+            pattern = 1 << self.x
+            self.__shifter.shiftByte(pattern)
+            time.sleep(self.timestep)
+
+            # randomly move left (-1) or right (+1)
+            step = random.choice([-1, 1])
+            self.x += step
+
+            # handle wrapping/limit based on isWrapOn
+            if self.isWrapOn:
+                self.x = self.x % 8
+            else:
+                if self.x < 0:
+                    self.x = 0
+                elif self.x > 7:
+                    self.x = 7
+        
+    def stop(self):
+        self.__running = False
+        self.__shifter.shiftByte(0b00000000)
