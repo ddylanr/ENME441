@@ -3,7 +3,7 @@ import socket
 
 # SETUP GPIO
 GPIO.setmode(GPIO.BCM)
-LED_PINS = [17, 27, 22]  # Example GPIO pins; change for your setup
+LED_PINS = [16, 20, 21]  # Example GPIO pins; change for your setup
 for pin in LED_PINS:
     GPIO.setup(pin, GPIO.OUT)
 pwms = [GPIO.PWM(pin, 1000) for pin in LED_PINS] # 1kHz frequency
