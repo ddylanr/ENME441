@@ -41,38 +41,33 @@ def build_form_page(msg=""): # Builds the HTML form page
 host = ''  # listen on all interfaces
 port = 8080 # port number
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) # Allow reuse of address
 server.bind((host, port))
 server.listen(1)
 print(f"Serving HTTP on port {port}...")
 try:
     while True:
-        conn, addr = server.accept()
-        request = conn.recv(2048).decode()
+        conn, addr = server.accept() # wait for a connection
+        request = conn.recv(2048).decode() # read the http request message as text
         if not request:
-            conn.close()
+            conn.close() # ignore empty requests
             continue
         # Parse method (GET or POST)
         first_line = request.split('\n')[0]
-        if request.startswith('POST'):
-            idx = request.find('\r\n\r\n')
-            body = request[idx+4:] if idx != -1 else ''
-            postvals = parsePOSTdata(body)
-            led_idx = int(postvals.get('led', '1')) - 1
-            bval = int(postvals.get('brightness', '0'))
-            brightness[led_idx] = bval
-            pwms[led_idx].ChangeDutyCycle(bval)
-            msg = f"Set LED {led_idx+1} to {bval}% brightness."
+        if request.startswith('POST'): # user submitted form
+            idx = request.find('\r\n\r\n') # find end of headers
+            body = request[idx+4:] if idx != -1 else '' # extract body
+            postvals = parsePOSTdata(body) # using helper function
+            led_idx = int(postvals.get('led', '1')) - 1 # LED indexed from 0-2
+            bval = int(postvals.get('brightness', '0')) # brightness value from form
+            brightness[led_idx] = bval # update stored brightness
+            pwms[led_idx].ChangeDutyCycle(bval) # set LED brightness
+            msg = f"Set LED {led_idx+1} to {bval}% brightness." # feedback message
         else:
             msg = ""
         html = build_form_page(msg)
         response = (
-            "HTTP/1.1 200 OK\r\n" +
-            "Content-Type: text/html\r\n" +
-            f"Content-Length: {len(html.encode())}\r\n" +
-            "Connection: close\r\n" +
-            "\r\n" +
-            html
+            "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + f"Content-Length: {len(html.encode())}\r\n" + "Connection: close\r\n" + "\r\n" + html
         )
         conn.sendall(response.encode())
         conn.close()

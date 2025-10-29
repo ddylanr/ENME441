@@ -2,10 +2,10 @@ import socket
 import RPi.GPIO as GPIO
 
 GPIO.setmode(GPIO.BCM)
-LED_PINS = [16, 20, 21]
+LED_PINS = [16, 20, 21] # my led pins
 for pin in LED_PINS:
     GPIO.setup(pin, GPIO.OUT)
-pwms = [GPIO.PWM(pin, 1000) for pin in LED_PINS]
+pwms = [GPIO.PWM(pin, 1000) for pin in LED_PINS] # 1kHz frequency
 for pwm in pwms:
     pwm.start(0)
 
@@ -50,31 +50,28 @@ try:
         if not request:
             conn.close()
             continue
-        # Only POST updates GPIO; always respond with HTML
+        # POST HANDLING: Only update LEDs if POST is received
         if request.startswith('POST'):
             idx = request.find('\r\n\r\n')
-            body = request[idx+4:] if idx != -1 else ''
-            items = body.split('&') # parse key-value pairs
-            params = {} # dictionary to hold parameters
+            body = request[idx+4:] if idx != -1 else ''   # Body is after headers
+            items = body.split('&')                       # Split into form fields
+            params = {}                                   # Dictionary for values
             for item in items:
                 if '=' in item:
-                    k,v = item.split('=')
-                    params[k] = v
+                    k,v = item.split('=')                 # key=value
+                    params[k] = v                         # Store in dictionary
             if 'led' in params and 'brightness' in params:
-                led_idx = int(params['led']) - 1
-                val = int(params['brightness'])
-                pwms[led_idx].ChangeDutyCycle(val)
+                led_idx = int(params['led']) - 1          # Convert from 1,2,3 to index 0,1,2
+                val = int(params['brightness'])           # Convert brightness string to int
+                pwms[led_idx].ChangeDutyCycle(val)        # Update specified LED
+
+        #Always respond with the same HTML/JavaScript page
         response = (
-            "HTTP/1.1 200 OK\r\n" +
-            "Content-Type: text/html\r\n" +
-            f"Content-Length: {len(html.encode())}\r\n" +
-            "Connection: close\r\n" +
-            "\r\n" +
-            html
+            "HTTP/1.1 200 OK\r\n" + "Content-Type: text/html\r\n" + f"Content-Length: {len(html.encode())}\r\n" + "Connection: close\r\n" + "\r\n" + html
         )
-        conn.sendall(response.encode())
-        conn.close()
+        conn.sendall(response.encode()) # Send response
+        conn.close() # Close connection
 finally:
     for pwm in pwms:
         pwm.stop()
-    GPIO.cleanup()
+    GPIO.cleanup() 
